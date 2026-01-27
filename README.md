@@ -47,17 +47,23 @@ app/
 
 ## Building the App
 
+### Prerequisites
+- **Android Studio**: Hedgehog (2023.1.1) or newer recommended
+- **JDK**: Version 17 or newer
+- **Gradle**: 8.2 (included via wrapper)
+
 ### Option 1: Android Studio (Recommended)
 1. Open Android Studio
 2. Select "Open an Existing Project"
 3. Navigate to `c:\Users\reedb\Documents\Data\mobile_print`
-4. Wait for Gradle sync to complete
-5. Click "Run" (green play button) or use `Shift+F10`
+4. Wait for Gradle sync to complete (this may take a few minutes on first run)
+5. If prompted about Gradle configuration, click "Sync Now"
+6. Click "Run" (green play button) or use `Shift+F10`
 
 ### Option 2: Command Line
 ```bash
 cd c:\Users\reedb\Documents\Data\mobile_print
-./gradlew assembleDebug
+.\gradlew assembleDebug
 # APK will be in: app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -109,6 +115,10 @@ cd c:\Users\reedb\Documents\Data\mobile_print
 - **File Handling**: Native Android file picker with EXTRA_ALLOW_MULTIPLE support
 
 ## Troubleshooting
+
+### Gradle Build Issues
+- **Error: "org.gradle.api.artifacts.Dependency"**: This has been fixed. Sync project with Gradle files in Android Studio (File > Sync Project with Gradle Files)
+- **Missing Gradle wrapper**: The wrapper files have been created. If issues persist, run `gradle wrapper` in the project directory
 
 ### Login Issues
 - Clear app data: Settings > Apps > Mobile Print > Storage > Clear Data

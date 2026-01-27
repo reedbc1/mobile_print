@@ -129,13 +129,22 @@ class MainActivity : AppCompatActivity() {
     private fun handleShareIntent(intent: Intent) {
         when (intent.action) {
             Intent.ACTION_SEND -> {
-                val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                // Check if it's a URL (text/plain)
+                if (intent.type == "text/plain") {
+                    val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+                    if (sharedText != null) {
+                        handleSharedUrl(sharedText)
+                    }
                 } else {
-                    @Suppress("DEPRECATION")
-                    intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                    // Handle file URI
+                    val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                    }
+                    uri?.let { sharedFileUris = listOf(it) }
                 }
-                uri?.let { sharedFileUris = listOf(it) }
             }
             Intent.ACTION_SEND_MULTIPLE -> {
                 val uris = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -146,6 +155,47 @@ class MainActivity : AppCompatActivity() {
                 }
                 uris?.let { sharedFileUris = it }
             }
+        }
+    }
+    
+    private fun handleSharedUrl(url: String) {
+        val fileDownloader = FileDownloader(this)
+        
+        if (fileDownloader.isValidFileUrl(url)) {
+            CoroutineScope(Dispatchers.Main).launch {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Downloading file from URL...",
+                    Toast.LENGTH_SHORT
+                ).show()
+                
+                val cachedUri = fileDownloader.downloadFromUrl(url)
+                if (cachedUri != null) {
+                    sharedFileUris = listOf(cachedUri)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "File downloaded successfully!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    
+                    // If already logged in and page loaded, trigger upload
+                    if (isLoggedIn()) {
+                        triggerFileUploadForSharedFiles()
+                    }
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Failed to download file from URL",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        } else {
+            Toast.makeText(
+                this,
+                "URL does not point to a supported file type",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
     

@@ -1,5 +1,6 @@
 package com.slcl.mobileprint
 
+import android.os.Build
 import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -41,6 +42,12 @@ class WebViewManager(
             // Enable cookies
             CookieManager.getInstance().setAcceptCookie(true)
             CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+            
+            // Ensure cookies persist across app sessions
+            // This allows the website's "keep me logged in" feature to work
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                CookieManager.getInstance().flush()
+            }
             
             // Improve rendering
             loadWithOverviewMode = true
@@ -110,20 +117,63 @@ class WebViewManager(
     }
     
     /**
-     * Inject files into the upload form (for share intent)
+     * Trigger file upload on the website
+     * Targets the specific upload input: <input class="button-toolbar-upload" type="file">
      */
     fun triggerFileUpload() {
         val javascript = """
             (function() {
-                var uploadButton = document.querySelector('.button-toolbar-upload');
-                if (uploadButton) {
-                    uploadButton.click();
-                    return true;
+                // Find the specific upload input
+                var uploadInput = document.querySelector('input.button-toolbar-upload[type="file"]');
+                
+                if (!uploadInput) {
+                    // Fallback: try any file input
+                    uploadInput = document.querySelector('input[type="file"]');
                 }
-                return false;
+                
+                if (uploadInput) {
+                    // Store original aria-hidden value
+                    var originalAriaHidden = uploadInput.getAttribute('aria-hidden');
+                    var originalTabIndex = uploadInput.getAttribute('tabindex');
+                    
+                    // Temporarily make it accessible
+                    uploadInput.removeAttribute('aria-hidden');
+                    uploadInput.setAttribute('tabindex', '0');
+                    
+                    // Try to trigger the click
+                    try {
+                        // Method 1: Direct click
+                        uploadInput.click();
+                        
+                        // Restore original attributes after a short delay
+                        setTimeout(function() {
+                            if (originalAriaHidden) {
+                                uploadInput.setAttribute('aria-hidden', originalAriaHidden);
+                            }
+                            if (originalTabIndex) {
+                                uploadInput.setAttribute('tabindex', originalTabIndex);
+                            }
+                        }, 100);
+                        
+                        return 'Clicked upload input successfully';
+                    } catch(e) {
+                        // Restore attributes on error
+                        if (originalAriaHidden) {
+                            uploadInput.setAttribute('aria-hidden', originalAriaHidden);
+                        }
+                        if (originalTabIndex) {
+                            uploadInput.setAttribute('tabindex', originalTabIndex);
+                        }
+                        return 'Error clicking: ' + e.message;
+                    }
+                }
+                
+                return 'Upload input not found';
             })();
         """.trimIndent()
         
-        executeJavaScript(javascript)
+        executeJavaScript(javascript) { result ->
+            android.util.Log.d("WebViewManager", "Upload trigger result: $result")
+        }
     }
 }

@@ -6,6 +6,10 @@ import android.net.Uri
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Handles file upload requests from the WebView
@@ -17,6 +21,11 @@ class FileUploadHandler(private val activity: Activity) {
     }
     
     var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private val fileQueue: MutableList<Uri> = mutableListOf()
+    private var currentFileIndex: Int = 0
+    private val fileDownloader = FileDownloader(activity)
+    var onUploadProgressCallback: ((current: Int, total: Int) -> Unit)? = null
+    var onDownloadProgressCallback: ((message: String) -> Unit)? = null
     
     /**
      * Custom WebChromeClient that intercepts file chooser requests
@@ -31,6 +40,23 @@ class FileUploadHandler(private val activity: Activity) {
             this@FileUploadHandler.filePathCallback?.onReceiveValue(null)
             this@FileUploadHandler.filePathCallback = filePathCallback
             
+            // If we have files in the queue, upload the current one
+            if (fileQueue.isNotEmpty() && currentFileIndex < fileQueue.size) {
+                val currentFile = fileQueue[currentFileIndex]
+                filePathCallback?.onReceiveValue(arrayOf(currentFile))
+                this@FileUploadHandler.filePathCallback = null
+                
+                // Move to next file
+                currentFileIndex++
+                
+                // Notify progress
+                onUploadProgressCallback?.invoke(currentFileIndex, fileQueue.size)
+                
+                // If more files remain, we'll handle them on the next upload trigger
+                return true
+            }
+            
+            // Otherwise, show the file picker
             val intent = createFileChooserIntent()
             activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
             
@@ -66,20 +92,85 @@ class FileUploadHandler(private val activity: Activity) {
     
     /**
      * Handle the result from the file chooser
+     * Downloads Google Drive files to cache before queueing
      */
     fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode != FILE_CHOOSER_REQUEST_CODE) {
             return
         }
         
-        val results = if (resultCode == Activity.RESULT_OK) {
-            data?.let { parseResult(it) }
-        } else {
-            null
+        if (resultCode == Activity.RESULT_OK) {
+            data?.let { intent ->
+                val uris = parseResult(intent)
+                if (uris != null) {
+                    // Process files asynchronously (download Google Drive files if needed)
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val processedUris = processFiles(uris)
+                        
+                        if (processedUris.isNotEmpty()) {
+                            // Queue files for sequential upload
+                            queueSharedFiles(processedUris)
+                            
+                            // Notify that files are ready
+                            withContext(Dispatchers.Main) {
+                                onDownloadProgressCallback?.invoke(
+                                    if (processedUris.size == 1) {
+                                        "File ready! Tap Upload to continue"
+                                    } else {
+                                        "${processedUris.size} files ready! Tap Upload to upload file 1 of ${processedUris.size}"
+                                    }
+                                )
+                            }
+                        }
+                        
+                        // Return null to close the file picker without uploading yet
+                        filePathCallback?.onReceiveValue(null)
+                        filePathCallback = null
+                    }
+                    return
+                }
+            }
         }
         
-        filePathCallback?.onReceiveValue(results)
+        // If we get here, user cancelled or error occurred
+        filePathCallback?.onReceiveValue(null)
         filePathCallback = null
+    }
+    
+    /**
+     * Process files: download Google Drive files to cache
+     */
+    private suspend fun processFiles(uris: Array<Uri>): List<Uri> = withContext(Dispatchers.IO) {
+        val processedUris = mutableListOf<Uri>()
+        
+        for ((index, uri) in uris.withIndex()) {
+            if (fileDownloader.needsDownload(uri)) {
+                // Notify user we're downloading
+                withContext(Dispatchers.Main) {
+                    onDownloadProgressCallback?.invoke(
+                        "Downloading file ${index + 1} of ${uris.size} from Google Drive..."
+                    )
+                }
+                
+                // Download to cache
+                val cachedUri = fileDownloader.downloadToCache(uri)
+                if (cachedUri != null) {
+                    processedUris.add(cachedUri)
+                } else {
+                    // Download failed, notify user
+                    withContext(Dispatchers.Main) {
+                        onDownloadProgressCallback?.invoke(
+                            "Failed to download file ${index + 1}"
+                        )
+                    }
+                }
+            } else {
+                // Local file, use as-is
+                processedUris.add(uri)
+            }
+        }
+        
+        processedUris
     }
     
     /**
@@ -100,10 +191,41 @@ class FileUploadHandler(private val activity: Activity) {
     }
     
     /**
-     * Upload files directly to the share intent queue
+     * Queue shared files for sequential upload
+     * These will be uploaded one at a time when the user taps the upload button
      */
     fun queueSharedFiles(uris: List<Uri>) {
-        // Store the URIs for upload after WebView is ready
-        // This will be handled by MainActivity
+        fileQueue.clear()
+        fileQueue.addAll(uris)
+        currentFileIndex = 0
+    }
+    
+    /**
+     * Check if there are pending shared files
+     */
+    fun hasPendingSharedFiles(): Boolean {
+        return currentFileIndex < fileQueue.size
+    }
+    
+    /**
+     * Get the current upload progress
+     */
+    fun getUploadProgress(): Pair<Int, Int> {
+        return Pair(currentFileIndex, fileQueue.size)
+    }
+    
+    /**
+     * Clear pending shared files
+     */
+    fun clearPendingSharedFiles() {
+        fileQueue.clear()
+        currentFileIndex = 0
+    }
+    
+    /**
+     * Clear downloaded cache files
+     */
+    fun clearCache() {
+        fileDownloader.clearCache()
     }
 }

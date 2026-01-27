@@ -10,10 +10,12 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.WebView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Main activity that hosts the WebView and coordinates all components
@@ -26,11 +28,9 @@ class MainActivity : AppCompatActivity() {
     
     private lateinit var webView: WebView
     private lateinit var webViewManager: WebViewManager
-    private lateinit var credentialManager: CredentialManager
     private lateinit var fileUploadHandler: FileUploadHandler
     
     private var sharedFileUris: List<Uri>? = null
-    private var isLoginAttempted = false
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +38,6 @@ class MainActivity : AppCompatActivity() {
         
         // Initialize components
         webView = findViewById(R.id.webView)
-        credentialManager = CredentialManager(this)
         fileUploadHandler = FileUploadHandler(this)
         webViewManager = WebViewManager(webView, fileUploadHandler)
         
@@ -51,6 +50,36 @@ class MainActivity : AppCompatActivity() {
         // Set up page load callback for auto-login
         webViewManager.setOnPageLoadedCallback {
             handlePageLoaded()
+        }
+        
+        // Set up upload progress callback
+        fileUploadHandler.onUploadProgressCallback = { current, total ->
+            runOnUiThread {
+                if (current < total) {
+                    Toast.makeText(
+                        this,
+                        "File $current of $total uploaded. Tap Upload for next file.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "All $total files uploaded successfully!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+        
+        // Set up download progress callback
+        fileUploadHandler.onDownloadProgressCallback = { message ->
+            runOnUiThread {
+                Toast.makeText(
+                    this,
+                    message,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
         
         // Load the print portal
@@ -121,80 +150,103 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun handlePageLoaded() {
-        val currentUrl = webView.url ?: return
-        
-        // Check if we're on the login page
-        if (currentUrl.contains("mobileprint.slcl.org/myprintcenter") && !isLoginAttempted) {
-            attemptAutoLogin()
-        }
-        
         // If we have shared files and we're logged in, trigger upload
         if (sharedFileUris != null && isLoggedIn()) {
+            // Wait a bit longer to ensure page is fully loaded and interactive
             Handler(Looper.getMainLooper()).postDelayed({
                 triggerFileUploadForSharedFiles()
-            }, 1000)
+            }, 2000)
         }
-    }
-    
-    private fun attemptAutoLogin() {
-        val credentials = credentialManager.getCredentials()
-        
-        if (credentials != null) {
-            // Auto-fill and submit login
-            Handler(Looper.getMainLooper()).postDelayed({
-                credentialManager.autoFillLogin(webView, credentials.first, credentials.second)
-                isLoginAttempted = true
-            }, 500)
-        } else {
-            // Prompt user to save credentials after manual login
-            promptToSaveCredentials()
-        }
-    }
-    
-    private fun promptToSaveCredentials() {
-        // Monitor for successful login by checking if we navigated away from login page
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (isLoggedIn()) {
-                showSaveCredentialsDialog()
-            }
-        }, 3000)
     }
     
     private fun isLoggedIn(): Boolean {
         val currentUrl = webView.url ?: return false
-        // Simple check: if we're on the portal and can see user content
-        // In production, you might want to check for specific elements or cookies
+        // Check if we're logged in by looking at the URL
+        // The website will redirect to login if session expired
         return currentUrl.contains("mobileprint.slcl.org/myprintcenter")
                 && !currentUrl.contains("login")
     }
     
-    private fun showSaveCredentialsDialog() {
-        // Check if credentials are already saved
-        if (credentialManager.hasCredentials()) {
+    private fun triggerFileUploadForSharedFiles() {
+        sharedFileUris?.let { uris ->
+            // Check if any files are from Google Drive and need downloading
+            val fileDownloader = FileDownloader(this)
+            val needsDownload = uris.any { fileDownloader.needsDownload(it) }
+            
+            if (needsDownload) {
+                // Process files asynchronously (download Google Drive files)
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Processing files from Google Drive...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    
+                    val processedUris = mutableListOf<Uri>()
+                    for ((index, uri) in uris.withIndex()) {
+                        if (fileDownloader.needsDownload(uri)) {
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Downloading file ${index + 1} of ${uris.size} from Google Drive...",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            
+                            val cachedUri = fileDownloader.downloadToCache(uri)
+                            if (cachedUri != null) {
+                                processedUris.add(cachedUri)
+                            } else {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Failed to download file ${index + 1}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        } else {
+                            processedUris.add(uri)
+                        }
+                    }
+                    
+                    // Queue the processed files
+                    queueProcessedFiles(processedUris)
+                }
+            } else {
+                // No Google Drive files, queue directly
+                queueProcessedFiles(uris)
+            }
+            
+            // Clear the shared files after processing starts
+            sharedFileUris = null
+        }
+    }
+    
+    private fun queueProcessedFiles(uris: List<Uri>) {
+        if (uris.isEmpty()) {
+            Toast.makeText(
+                this,
+                "No files to upload",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
         
-        AlertDialog.Builder(this)
-            .setTitle("Save Login Credentials")
-            .setMessage("Would you like to securely save your login credentials for automatic login next time?")
-            .setPositiveButton("Save") { _, _ ->
-                // Extract credentials from the login form (if still available)
-                // In practice, you'd need to capture these during the login process
-                // For now, we'll implement this in a future update
-                Toast.makeText(this, "Credentials saved securely", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("No thanks", null)
-            .show()
-    }
-    
-    private fun triggerFileUploadForSharedFiles() {
-        sharedFileUris?.let { uris ->
-            // Trigger the upload button in the web interface
-            webViewManager.triggerFileUpload()
-            
-            // The file picker will open, and we'll handle it in onActivityResult
-            // Note: The shared files will be available through the file picker
-        }
+        // Queue the shared files for sequential upload
+        fileUploadHandler.queueSharedFiles(uris)
+        
+        val fileCount = uris.size
+        // Show instruction to user
+        Toast.makeText(
+            this,
+            if (fileCount == 1) {
+                "File ready! Tap the Upload button to continue"
+            } else {
+                "$fileCount files ready! Tap Upload to upload file 1 of $fileCount"
+            },
+            Toast.LENGTH_LONG
+        ).show()
+        
+        // Note: We cannot programmatically trigger file upload due to browser security.
+        // File inputs require a real user gesture (tap/click) to open.
+        // The files are queued and will upload one at a time when user taps the upload button.
     }
     
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -212,6 +264,12 @@ class MainActivity : AppCompatActivity() {
     
     override fun onDestroy() {
         super.onDestroy()
+        // Flush cookies to ensure login session persists
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            android.webkit.CookieManager.getInstance().flush()
+        }
+        // Clear cached downloaded files
+        fileUploadHandler.clearCache()
         webView.destroy()
     }
 }

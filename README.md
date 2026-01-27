@@ -5,8 +5,7 @@ A native Android application that provides seamless access to the St. Louis Coun
 ## Features
 
 - **WebView Integration**: Full access to the mobile print portal website
-- **Secure Credentials**: Login credentials stored securely using Android Keystore
-- **Auto-Login**: Automatic login with saved credentials
+- **Persistent Login**: Uses website's "Keep me logged in" feature via cookie persistence
 - **Multi-File Upload**: Native Android file picker with support for selecting multiple files
 - **Share Intent Support**: Share files from other apps (Files, Google Drive, Photos, etc.) directly to the print portal
 - **Supported File Types**:
@@ -30,8 +29,7 @@ app/
 ├── src/main/
 │   ├── java/com/slcl/mobileprint/
 │   │   ├── MainActivity.kt              # Main activity with WebView and share intent handling
-│   │   ├── WebViewManager.kt            # WebView configuration and JavaScript interface
-│   │   ├── CredentialManager.kt         # Secure credential storage with Android Keystore
+│   │   ├── WebViewManager.kt            # WebView configuration with cookie persistence
 │   │   └── FileUploadHandler.kt         # Multi-file upload handler
 │   ├── res/
 │   │   ├── layout/
@@ -84,10 +82,10 @@ cd c:\Users\reedb\Documents\Data\mobile_print
 ### First Time Setup
 1. Launch the app
 2. Log in with your library card and PIN
-3. (Optional) Save credentials for automatic login
+3. Check "Keep me logged in" on the website (if available)
 
 ### Uploading Files from WebView
-1. Open the app (auto-login if credentials saved)
+1. Open the app (will stay logged in if you checked "Keep me logged in")
 2. Tap the "Upload" button in the web interface
 3. Select one or more files using the native Android file picker
 4. Files will upload to your print queue
@@ -97,20 +95,21 @@ cd c:\Users\reedb\Documents\Data\mobile_print
 2. Select one or more files
 3. Tap "Share"
 4. Choose "Mobile Print" from the share menu
-5. App opens, logs in automatically, and navigates to upload
+5. App opens and navigates to upload
 6. Select files from the file picker to upload
 
 ## Security
 
-- **Credential Storage**: All credentials are encrypted using Android Keystore with AES-GCM encryption
+- **Cookie-Based Sessions**: Login sessions persist using secure HTTP-only cookies from the website
 - **HTTPS Only**: App only communicates over secure HTTPS connections
 - **No Third-Party Tracking**: No analytics or third-party SDKs
+- **Sandboxed Storage**: WebView data is isolated to the app's private storage
 
 ## Technical Details
 
 - **Language**: Kotlin
 - **UI Framework**: Android Views with WebView
-- **Encryption**: Android Keystore System with AES/GCM/NoPadding
+- **Session Management**: Cookie-based persistence with automatic flush
 - **Web Engine**: Android WebView with JavaScript enabled
 - **File Handling**: Native Android file picker with EXTRA_ALLOW_MULTIPLE support
 
@@ -121,8 +120,9 @@ cd c:\Users\reedb\Documents\Data\mobile_print
 - **Missing Gradle wrapper**: The wrapper files have been created. If issues persist, run `gradle wrapper` in the project directory
 
 ### Login Issues
-- Clear app data: Settings > Apps > Mobile Print > Storage > Clear Data
-- Re-enter credentials
+- Clear app data to reset login: Settings > Apps > Mobile Print > Storage > Clear Data
+- Make sure to check "Keep me logged in" on the website for persistent sessions
+- If cookies aren't persisting, try reinstalling the app
 
 ### File Upload Not Working
 - Check internet connection

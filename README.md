@@ -30,7 +30,8 @@ app/
 │   ├── java/com/slcl/mobileprint/
 │   │   ├── MainActivity.kt              # Main activity with WebView and share intent handling
 │   │   ├── WebViewManager.kt            # WebView configuration with cookie persistence
-│   │   └── FileUploadHandler.kt         # Multi-file upload handler
+│   │   ├── FileUploadHandler.kt         # Multi-file upload handler
+│   │   └── FileDownloader.kt            # Google Drive and URL file downloader
 │   ├── res/
 │   │   ├── layout/
 │   │   │   └── activity_main.xml        # Main layout with WebView

@@ -1,4 +1,4 @@
-com.slcl.mobileprint
+com.uploadhelper
 anim abc_fade_in
 anim abc_fade_out
 anim abc_grow_fade_in_from_bottom
@@ -3071,6 +3071,7 @@ id auto
 id autoComplete
 id autoCompleteToEnd
 id autoCompleteToStart
+id backButton
 id barrier
 id baseline
 id beginOnFirstDraw
@@ -3163,6 +3164,7 @@ id fixed
 id flip
 id floating
 id forever
+id forwardButton
 id fragment_container_view_tag
 id fullscreen_header
 id ghost_view
@@ -3177,6 +3179,7 @@ id hide_ime_id
 id hideable
 id home
 id homeAsUp
+id homeButton
 id honorRequest
 id icon
 id icon_group
@@ -3308,11 +3311,13 @@ id pin
 id position
 id postLayout
 id pressed
+id progressBar
 id progress_circular
 id progress_horizontal
 id radio
 id ratio
 id rectangles
+id refreshButton
 id report_drawn
 id reverseSawtooth
 id right
@@ -3426,6 +3431,7 @@ id unchecked
 id uniform
 id unlabeled
 id up
+id urlInput
 id useLogo
 id view_offset_helper
 id view_tree_lifecycle_owner
@@ -3668,6 +3674,7 @@ string abc_toolbar_collapse_description
 string androidx_startup
 string app_name
 string appbar_scrolling_view_behavior
+string back
 string bottom_sheet_behavior
 string bottomsheet_action_collapse
 string bottomsheet_action_expand
@@ -3685,12 +3692,15 @@ string character_counter_content_description
 string character_counter_overflowed_content_description
 string character_counter_pattern
 string clear_text_end_icon_content_description
+string default_homepage
 string error_a11y_label
 string error_icon_content_description
 string exposed_dropdown_menu_content_description
 string fab_transformation_scrim_behavior
 string fab_transformation_sheet_behavior
+string forward
 string hide_bottom_view_on_scroll_behavior
+string home
 string icon_content_description
 string item_view_role_description
 string loading
@@ -3799,7 +3809,7 @@ string path_password_eye
 string path_password_eye_mask_strike_through
 string path_password_eye_mask_visible
 string path_password_strike_through
-string print_portal_url
+string refresh
 string search_menu_title
 string searchbar_scrolling_view_behavior
 string searchview_clear_text_content_description
@@ -3807,6 +3817,7 @@ string searchview_navigation_content_description
 string side_sheet_accessibility_pane_title
 string side_sheet_behavior
 string status_bar_notification_info_overflow
+string url_hint
 style AlertDialog_AppCompat
 style AlertDialog_AppCompat_Light
 style Animation_AppCompat_Dialog
@@ -4432,7 +4443,7 @@ style Theme_MaterialComponents_Light_NoActionBar
 style Theme_MaterialComponents_Light_NoActionBar_Bridge
 style Theme_MaterialComponents_NoActionBar
 style Theme_MaterialComponents_NoActionBar_Bridge
-style Theme_MobilePrint
+style Theme_UploadHelper
 style ThemeOverlay_AppCompat
 style ThemeOverlay_AppCompat_ActionBar
 style ThemeOverlay_AppCompat_Dark

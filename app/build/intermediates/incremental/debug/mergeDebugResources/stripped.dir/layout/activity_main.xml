@@ -4,6 +4,77 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Address Bar Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="?android:attr/colorBackground"
+        android:elevation="4dp">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="Back"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <!-- Forward Button -->
+        <ImageButton
+            android:id="@+id/forwardButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_media_play"
+            android:contentDescription="Forward"
+            android:rotation="180"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <!-- URL Input Field -->
+        <EditText
+            android:id="@+id/urlInput"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:hint="Enter URL or search"
+            android:inputType="textUri"
+            android:imeOptions="actionGo"
+            android:singleLine="true"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@android:drawable/editbox_background" />
+
+        <!-- Refresh Button -->
+        <ImageButton
+            android:id="@+id/refreshButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_popup_sync"
+            android:contentDescription="Refresh"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <!-- Home Button -->
+        <ImageButton
+            android:id="@+id/homeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_mylocation"
+            android:contentDescription="Home"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+    </LinearLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:visibility="gone" />
+
+    <!-- WebView -->
     <WebView
         android:id="@+id/webView"
         android:layout_width="match_parent"

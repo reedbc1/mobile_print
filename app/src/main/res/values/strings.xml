@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Mobile Print</string>
-    <string name="print_portal_url">https://mobileprint.slcl.org/myprintcenter/</string>
-    <string name="loading">Loading...</string>
+    <string name="app_name">Upload Helper</string>
+    <string name="default_homepage">https://google.com</string>
+    <string name="url_hint">Enter URL or search</string>
+    <string name="loading">Loading…</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="refresh">Refresh</string>
+    <string name="home">Home</string>
 </resources>

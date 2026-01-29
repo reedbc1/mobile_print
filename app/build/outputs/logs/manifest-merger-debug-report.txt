@@ -107,10 +107,10 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\reedb\.gradle\cach
 	android:allowBackup
 		ADDED from C:\Users\reedb\Documents\Data\mobile_print\app\src\main\AndroidManifest.xml:9:9-35
 	android:theme
-		ADDED from C:\Users\reedb\Documents\Data\mobile_print\app\src\main\AndroidManifest.xml:12:9-49
+		ADDED from C:\Users\reedb\Documents\Data\mobile_print\app\src\main\AndroidManifest.xml:12:9-50
 	android:usesCleartextTraffic
 		ADDED from C:\Users\reedb\Documents\Data\mobile_print\app\src\main\AndroidManifest.xml:13:9-45
-activity#com.slcl.mobileprint.MainActivity
+activity#com.uploadhelper.MainActivity
 ADDED from C:\Users\reedb\Documents\Data\mobile_print\app\src\main\AndroidManifest.xml:15:9-85:20
 	android:exported
 		ADDED from C:\Users\reedb\Documents\Data\mobile_print\app\src\main\AndroidManifest.xml:17:13-36
@@ -294,7 +294,7 @@ ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transf
 		ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
-permission#com.slcl.mobileprint.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+permission#com.uploadhelper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
 		ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
@@ -304,7 +304,7 @@ uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
-uses-permission#com.slcl.mobileprint.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission#com.uploadhelper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\reedb\.gradle\caches\8.13\transforms\52a43f6ebe5d2688c0784b297833c955\transformed\core-1.12.0\AndroidManifest.xml:26:22-94

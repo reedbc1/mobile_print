@@ -22,16 +22,6 @@
             android:contentDescription="Back"
             android:background="?attr/selectableItemBackgroundBorderless" />
 
-        <!-- Forward Button -->
-        <ImageButton
-            android:id="@+id/forwardButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_media_play"
-            android:contentDescription="Forward"
-            android:rotation="180"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
         <!-- URL Input Field -->
         <EditText
             android:id="@+id/urlInput"
@@ -44,6 +34,7 @@
             android:singleLine="true"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
+            android:textColor="#000000"
             android:background="@android:drawable/editbox_background" />
 
         <!-- Refresh Button -->
@@ -53,15 +44,6 @@
             android:layout_height="48dp"
             android:src="@android:drawable/ic_popup_sync"
             android:contentDescription="Refresh"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
-        <!-- Home Button -->
-        <ImageButton
-            android:id="@+id/homeButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_menu_mylocation"
-            android:contentDescription="Home"
             android:background="?attr/selectableItemBackgroundBorderless" />
 
     </LinearLayout>

@@ -41,9 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fileUploadHandler: FileUploadHandler
     private lateinit var urlInput: EditText
     private lateinit var backButton: ImageButton
-    private lateinit var forwardButton: ImageButton
     private lateinit var refreshButton: ImageButton
-    private lateinit var homeButton: ImageButton
     private lateinit var progressBar: ProgressBar
     private lateinit var prefs: SharedPreferences
     
@@ -57,9 +55,7 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         urlInput = findViewById(R.id.urlInput)
         backButton = findViewById(R.id.backButton)
-        forwardButton = findViewById(R.id.forwardButton)
         refreshButton = findViewById(R.id.refreshButton)
-        homeButton = findViewById(R.id.homeButton)
         progressBar = findViewById(R.id.progressBar)
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         
@@ -253,21 +249,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         
-        // Forward button
-        forwardButton.setOnClickListener {
-            if (webViewManager.canGoForward()) {
-                webViewManager.goForward()
-            }
-        }
-        
         // Refresh button
         refreshButton.setOnClickListener {
             webView.reload()
-        }
-        
-        // Home button
-        homeButton.setOnClickListener {
-            loadUrl(getString(R.string.default_homepage))
         }
         
         // URL input - handle enter/go key
@@ -280,6 +264,12 @@ class MainActivity : AppCompatActivity() {
             } else {
                 false
             }
+        }
+        
+        // URL input - select all text when tapped
+        urlInput.setSelectAllOnFocus(true)
+        urlInput.setOnClickListener {
+            urlInput.selectAll()
         }
     }
     
@@ -320,9 +310,8 @@ class MainActivity : AppCompatActivity() {
         urlInput.setText(url)
         // Save last URL
         prefs.edit().putString(PREF_LAST_URL, url).apply()
-        // Update button states
+        // Update button state
         backButton.isEnabled = webViewManager.canGoBack()
-        forwardButton.isEnabled = webViewManager.canGoForward()
     }
     
     private fun updateProgress(progress: Int) {

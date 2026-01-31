@@ -4,8 +4,6 @@ drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable mp_launcher_background
 id backButton
-id forwardButton
-id homeButton
 id progressBar
 id refreshButton
 id urlInput
